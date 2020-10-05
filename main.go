@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"gaen/export"
 	"io/ioutil"
-	"strings"
 
 	"github.com/spf13/cobra"
 	"google.golang.org/protobuf/proto"
 )
+
+var version = "0.0.0-dev"
 
 var rootCmd = &cobra.Command{
 	Use:   "gaen",
@@ -21,7 +22,7 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the gaen version number",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Print: " + strings.Join(args, " "))
+		fmt.Println("gaen version " + version)
 	},
 }
 
