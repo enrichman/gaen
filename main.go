@@ -34,9 +34,19 @@ var decodeCmd = &cobra.Command{
 	},
 }
 
+var downloadCmd = &cobra.Command{
+	Use:   "download",
+	Short: "Download a TEK export binary file",
+	Args:  cobra.MinimumNArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return Download("out", args[0])
+	},
+}
+
 func main() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(decodeCmd)
+	rootCmd.AddCommand(downloadCmd)
 	rootCmd.Execute()
 }
 
