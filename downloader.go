@@ -10,10 +10,13 @@ import (
 )
 
 const (
-	IMMUNI_URL      = "https://get.immuni.gov.it"
-	SWISS_COVID_URL = "https://www.pt.bfs.admin.ch"
+	// ImmuniURL is the base url for the Immuni app
+	ImmuniURL = "https://get.immuni.gov.it"
+	// SwissCovidURL is the base url for the SwissCovid app
+	SwissCovidURL = "https://www.pt.bfs.admin.ch"
 )
 
+// DownloaderFactory returns the Downloader for the specified app
 func DownloaderFactory(app string) (Downloader, error) {
 	switch app {
 	case "immuni":
@@ -24,10 +27,12 @@ func DownloaderFactory(app string) (Downloader, error) {
 	return nil, fmt.Errorf("unknown app [%s]", app)
 }
 
+// ImmuniDownloader is the downloader for the Immuni app
 type ImmuniDownloader struct{}
 
+// GetLatestExport returns the latest Immuni export
 func (d ImmuniDownloader) GetLatestExport() (string, error) {
-	resp, err := http.Get(IMMUNI_URL + "/v1/keys/index")
+	resp, err := http.Get(ImmuniURL + "/v1/keys/index")
 	if err != nil {
 		return "", err
 	}
@@ -50,18 +55,22 @@ func (d ImmuniDownloader) GetLatestExport() (string, error) {
 	return strconv.Itoa(latest), nil
 }
 
+// GetURL returns the Immuni URL where to download the export
 func (d ImmuniDownloader) GetURL(export string) string {
-	return IMMUNI_URL + "/v1/keys/" + export
+	return ImmuniURL + "/v1/keys/" + export
 }
 
+// SwissCovidDownloader is the downloader for the Immuni app
 type SwissCovidDownloader struct{}
 
+// GetLatestExport returns the latest SwissCovid export
 func (d SwissCovidDownloader) GetLatestExport() (string, error) {
 	now := time.Now()
 	nowMidnight := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
 	return strconv.Itoa(int(nowMidnight.Unix() * 1000)), nil
 }
 
+// GetURL returns the SwissCovid URL where to download the export
 func (d SwissCovidDownloader) GetURL(export string) string {
-	return SWISS_COVID_URL + "/v1/gaen/exposed/" + export
+	return SwissCovidURL + "/v1/gaen/exposed/" + export
 }

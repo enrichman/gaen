@@ -8,11 +8,13 @@ import (
 	"path/filepath"
 )
 
+// Downloader is the interface that can be used to download a GAEN export
 type Downloader interface {
 	GetLatestExport() (string, error)
 	GetURL(export string) string
 }
 
+// Download will download the 'app' export in the workDir/app folder
 func Download(workDir, app string) error {
 	dwln, err := DownloaderFactory(app)
 	if err != nil {
@@ -41,6 +43,7 @@ func Download(workDir, app string) error {
 	return os.Remove(filepathZip)
 }
 
+// DownloadZip downloads a zip from the url into the specified zipPath
 func DownloadZip(url, zipPath string) error {
 	resp, err := http.Get(url)
 	if err != nil {

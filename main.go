@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -26,7 +27,17 @@ var decodeCmd = &cobra.Command{
 	Short: "Decode a TEK export binary file",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return DecodeFromFile(args[0])
+		teks, err := DecodeFromFile(args[0])
+		if err != nil {
+			return err
+		}
+
+		// print something
+		fmt.Printf("\nTEK: [%v] - %+v - %+v\n", teks[0].ID.ToBase64(), teks[0].ID.ToHEX(), teks[0].ID.ToInt())
+		b, _ := json.MarshalIndent(teks[0].RPIs[0], "", "\t")
+		fmt.Printf("\nRPI:\n%v\n", string(b))
+
+		return nil
 	},
 }
 
