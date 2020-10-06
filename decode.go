@@ -127,7 +127,7 @@ func (id ID) ToBase64() string {
 func (id ID) ToHEX() []string {
 	hexArr := make([]string, 0)
 	for _, i := range id {
-		hex := strconv.FormatUint(uint64(i), 16)
+		hex := fmt.Sprintf("%02s", strconv.FormatUint(uint64(i), 16))
 		hexArr = append(hexArr, strings.ToUpper(hex))
 	}
 	return hexArr
