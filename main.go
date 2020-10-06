@@ -33,10 +33,12 @@ var decodeCmd = &cobra.Command{
 		}
 
 		// print something
-		fmt.Printf("\nTEK: [%v] - %+v - %+v\n", teks[0].ID.ToBase64(), teks[0].ID.ToHEX(), teks[0].ID.ToInt())
-		b, _ := json.MarshalIndent(teks[0].RPIs[0], "", "\t")
-		fmt.Printf("\nRPI:\n%v\n", string(b))
+		b, err := json.MarshalIndent(teks, "", "    ")
+		if err != nil {
+			return err
+		}
 
+		fmt.Printf("%s", string(b))
 		return nil
 	},
 }
