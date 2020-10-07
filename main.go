@@ -22,6 +22,8 @@ var versionCmd = &cobra.Command{
 	},
 }
 
+var teksFilter []string
+
 var decodeCmd = &cobra.Command{
 	Use:   "decode",
 	Short: "Decode a TEK export binary file",
@@ -32,8 +34,22 @@ var decodeCmd = &cobra.Command{
 			return err
 		}
 
+		filtered := make([]*TemporaryExposureKey, 0)
+		for _, tek := range teks {
+			if len(teksFilter) == 0 {
+				tek.RPIs = nil
+				filtered = append(filtered, tek)
+			}
+
+			for _, tf := range teksFilter {
+				if tek.ID.ToBase64() == tf {
+					filtered = append(filtered, tek)
+				}
+			}
+		}
+
 		// print something
-		b, err := json.MarshalIndent(teks, "", "    ")
+		b, err := json.MarshalIndent(filtered, "", "    ")
 		if err != nil {
 			return err
 		}
@@ -54,6 +70,15 @@ var downloadCmd = &cobra.Command{
 
 func main() {
 	rootCmd.AddCommand(versionCmd)
+
+	decodeCmd.Flags().StringArrayVarP(
+		&teksFilter,
+		"tek",
+		"t",
+		make([]string, 0),
+		"Display the RPIs (Rolling Proximity Identifiers) of the specified TEKs",
+	)
+
 	rootCmd.AddCommand(decodeCmd)
 	rootCmd.AddCommand(downloadCmd)
 	rootCmd.Execute()

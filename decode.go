@@ -4,6 +4,7 @@ import (
 	"crypto/aes"
 	"crypto/sha256"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"gaen/export"
 	"io"
@@ -45,10 +46,19 @@ func DecodeExport(export *export.TemporaryExposureKeyExport) ([]*TemporaryExposu
 	teks := make([]*TemporaryExposureKey, 0)
 
 	for _, tek := range export.Keys {
-		rollingStartInterval := int(*tek.RollingStartIntervalNumber)
-		rollingPeriod := int(*tek.RollingPeriod)
+		if tek.RollingStartIntervalNumber == nil {
+			return nil, errors.New("cannot decode export: RollingStartIntervalNumber is nil")
+		}
+		if tek.RollingPeriod == nil {
+			return nil, errors.New("cannot decode export: RollingPeriod is nil")
+		}
 
-		tek := NewTemporaryExposureKey(tek.KeyData, rollingStartInterval, rollingPeriod)
+		tek := NewTemporaryExposureKey(
+			tek.KeyData,
+			int(*tek.RollingStartIntervalNumber),
+			int(*tek.RollingPeriod),
+		)
+
 		err := DecodeTEK(tek)
 		if err != nil {
 			return nil, err
@@ -68,7 +78,7 @@ func DecodeTEK(tek *TemporaryExposureKey) error {
 		return err
 	}
 
-	rpis, err := NewRollingProximityIdentifiers(rpiKey, tek.RollingStartInterval, tek.RollingPeriod)
+	rpis, err := NewRollingProximityIdentifiers(rpiKey, tek.rollingStartInterval, tek.rollingPeriod)
 	if err != nil {
 		return err
 	}
@@ -110,6 +120,15 @@ func NewRollingProximityIdentifier(rpiKey []byte, interval int) (*RollingProximi
 	return rpi, nil
 }
 
+// JSONTime is an alias used to format the time.Time
+type JSONTime time.Time
+
+// MarshalJSON is used to override the default marshalJSON
+func (t JSONTime) MarshalJSON() ([]byte, error) {
+	jsonTime := fmt.Sprintf(`"%s"`, time.Time(t).Format("2006-01-02"))
+	return []byte(jsonTime), nil
+}
+
 // ID is an alias for an ID made of []byte
 type ID []byte
 
@@ -144,18 +163,20 @@ func (id ID) ToInt() []int {
 
 // TemporaryExposureKey is the daily tracing key
 type TemporaryExposureKey struct {
-	ID                   ID `json:"id"`
-	RollingStartInterval int
-	RollingPeriod        int
-	RPIs                 []*RollingProximityIdentifier `json:"rpis"`
+	ID                   ID       `json:"id"`
+	Date                 JSONTime `json:"date"`
+	rollingStartInterval int
+	rollingPeriod        int
+	RPIs                 []*RollingProximityIdentifier `json:"rpis,omitempty"`
 }
 
 // NewTemporaryExposureKey returns a Temporary Exposure Key
 func NewTemporaryExposureKey(id []byte, rollingStartInterval, rollingPeriod int) *TemporaryExposureKey {
 	return &TemporaryExposureKey{
 		ID:                   id,
-		RollingStartInterval: rollingStartInterval,
-		RollingPeriod:        rollingPeriod,
+		Date:                 JSONTime(time.Unix(int64(rollingStartInterval*600), 0)),
+		rollingStartInterval: rollingStartInterval,
+		rollingPeriod:        rollingPeriod,
 		RPIs:                 make([]*RollingProximityIdentifier, 0),
 	}
 }
