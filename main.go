@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/jmespath/go-jmespath"
 	"github.com/spf13/cobra"
 )
 
@@ -22,7 +23,7 @@ var versionCmd = &cobra.Command{
 	},
 }
 
-var teksFilter []string
+var query string
 
 var decodeCmd = &cobra.Command{
 	Use:   "decode",
@@ -34,27 +35,24 @@ var decodeCmd = &cobra.Command{
 			return err
 		}
 
-		filtered := make([]*TemporaryExposureKey, 0)
-		for _, tek := range teks {
-			if len(teksFilter) == 0 {
-				tek.RPIs = nil
-				filtered = append(filtered, tek)
-			}
+		var out interface{}
 
-			for _, tf := range teksFilter {
-				if tek.ID.ToBase64() == tf {
-					filtered = append(filtered, tek)
-				}
+		if query == "" {
+			out = teks
+		} else {
+			out, err = jmespath.Search(query, teks)
+			if err != nil {
+				return err
 			}
 		}
 
 		// print something
-		b, err := json.MarshalIndent(filtered, "", "    ")
+		b, err := json.MarshalIndent(out, "", "    ")
 		if err != nil {
 			return err
 		}
 
-		fmt.Printf("%s", string(b))
+		fmt.Printf("%+v", string(b))
 		return nil
 	},
 }
@@ -71,12 +69,9 @@ var downloadCmd = &cobra.Command{
 func main() {
 	rootCmd.AddCommand(versionCmd)
 
-	decodeCmd.Flags().StringArrayVarP(
-		&teksFilter,
-		"tek",
-		"t",
-		make([]string, 0),
-		"Display the RPIs (Rolling Proximity Identifiers) of the specified TEKs",
+	decodeCmd.Flags().StringVarP(
+		&query, "query", "q", "",
+		"query",
 	)
 
 	rootCmd.AddCommand(decodeCmd)

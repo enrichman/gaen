@@ -163,11 +163,11 @@ func (id ID) ToInt() []int {
 
 // TemporaryExposureKey is the daily tracing key
 type TemporaryExposureKey struct {
-	ID                   ID       `json:"id"`
-	Date                 JSONTime `json:"date"`
+	ID                   ID `json:"ID"`
+	Date                 JSONTime
 	rollingStartInterval int
 	rollingPeriod        int
-	RPIs                 []*RollingProximityIdentifier `json:"rpis,omitempty"`
+	RPIs                 []*RollingProximityIdentifier `json:",omitempty"`
 }
 
 // NewTemporaryExposureKey returns a Temporary Exposure Key
@@ -183,8 +183,8 @@ func NewTemporaryExposureKey(id []byte, rollingStartInterval, rollingPeriod int)
 
 // RollingProximityIdentifier is the bluetooth pseudorandom identifier
 type RollingProximityIdentifier struct {
-	ID       ID        `json:"id"`
-	Interval time.Time `json:"interval"`
+	ID       ID        `json:"ID"`
+	Interval time.Time `json:"Interval"`
 }
 
 // padInterval is used to creates the padding array for the specified interval

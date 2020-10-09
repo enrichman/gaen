@@ -31,15 +31,92 @@ Then you can decode the export running
 gaen decode out/immuni/xxx/export.bin
 ```
 
-and this will output the first TEK with the first RPI:
+and this will output the decoded JSON
+
+```json
+{
+    "ID": "+wK7aDl5cTC2wbZ4Ux6bvw==",
+    "Date": "2020-10-02",
+    "RPIs": [
+        [
+            {
+                "ID": "GkUh9M/fYslxaxucp0ayWg==",
+                "Interval": "2020-09-29T02:00:00+02:00"
+            }
+        ],
+        ...
+        [
+            {
+                "ID": "N99nmdxpfAvk0ByUGWI6EQ==",
+                "Interval": "2020-09-29T02:40:00+02:00"
+            }
+        ]
+    ],
+    ...
+}
+```
+
+### query
+
+`gaen` implements a `--query` flag that follows the [JMESPath specification](https://jmespath.org/) that you can use to filter the output.
+
+For example if you want to get the first TEK with its first RPI you can run:
+
+```bash
+gaen decode out/immuni/167/export.bin --query '[0].{ ID:ID, Date:Date, RPIS:RPIs[0] }'
+```
+```json
+{
+    "Date": "2020-09-29",
+    "ID": "+wK7aDl5cTC2wbZ4Ux6bvw==",
+    "RPIS": {
+        "ID": "GkUh9M/fYslxaxucp0ayWg==",
+        "Interval": "2020-09-29T02:00:00+02:00"
+    }
+}
+```
+
+or get the first 5 RPIs like this:
 
 ```
-TEK: [+KYwhAsB9QEq0PvaJfo4+Q==] - [F8 A6 30 84 B 1 F5 1 2A D0 FB DA 25 FA 38 F9]
+gaen decode out/immuni/167/export.bin --query '[0].{ ID:ID, Date:Date, RPIs:RPIs[:5].[{ ID:ID, Interval:Interval }] }'
+```
 
-RPI:
+```json
 {
-        "id": "q7WZAsXPgkuE+BEiadwLPQ==",
-        "id_bytes": "AB B5 99 2 C5 CF 82 4B 84 F8 11 22 69 DC B 3D",
-        "interval": "2020-10-03T02:00:00+02:00"
+    "Date": "2020-09-29",
+    "ID": "+wK7aDl5cTC2wbZ4Ux6bvw==",
+    "RPIs": [
+        [
+            {
+                "ID": "GkUh9M/fYslxaxucp0ayWg==",
+                "Interval": "2020-09-29T02:00:00+02:00"
+            }
+        ],
+        [
+            {
+                "ID": "72eL1vRaRXuRfTFTnR6gDA==",
+                "Interval": "2020-09-29T02:10:00+02:00"
+            }
+        ],
+        [
+            {
+                "ID": "itB7DTxs6aCl3FWz5QxQVw==",
+                "Interval": "2020-09-29T02:20:00+02:00"
+            }
+        ],
+        [
+            {
+                "ID": "h77WS2cu5x7SHoUw6Tgdfg==",
+                "Interval": "2020-09-29T02:30:00+02:00"
+            }
+        ],
+        [
+            {
+                "ID": "N99nmdxpfAvk0ByUGWI6EQ==",
+                "Interval": "2020-09-29T02:40:00+02:00"
+            }
+        ]
+    ]
 }
 ```
