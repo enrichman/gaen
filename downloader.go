@@ -65,9 +65,27 @@ type SwissCovidDownloader struct{}
 
 // GetLatestExport returns the latest SwissCovid export
 func (d SwissCovidDownloader) GetLatestExport() (string, error) {
-	now := time.Now()
-	nowMidnight := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
-	return strconv.Itoa(int(nowMidnight.Unix() * 1000)), nil
+	retry := 0
+
+	for retry < 3 {
+		now := time.Now()
+		nowMidnight := time.Date(now.Year(), now.Month(), now.Day()-retry, 0, 0, 0, 0, time.UTC)
+		latestExport := strconv.Itoa(int(nowMidnight.Unix() * 1000))
+
+		url := d.GetURL(latestExport)
+		resp, err := http.Get(url)
+		if err != nil {
+			return "", err
+		}
+		resp.Body.Close()
+
+		if resp.StatusCode == http.StatusOK {
+			return latestExport, nil
+		}
+		retry++
+	}
+
+	return "", fmt.Errorf("error getting latest swisscovid export")
 }
 
 // GetURL returns the SwissCovid URL where to download the export

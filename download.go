@@ -26,7 +26,10 @@ func Download(workDir, app string) error {
 		return err
 	}
 
-	latest, _ := dwln.GetLatestExport()
+	latest, err := dwln.GetLatestExport()
+	if err != nil {
+		return err
+	}
 	latestURL := dwln.GetURL(latest)
 
 	filepath := filepath.Join(workDir, app, latest)
